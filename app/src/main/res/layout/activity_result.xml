@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
     android:gravity="center"
     android:orientation="vertical">
 
@@ -11,6 +11,7 @@
         android:id="@+id/codeIV"
         android:layout_width="150dp"
         android:layout_height="150dp"
+        android:background="@color/barcodeBackground"
         tools:src="@android:drawable/zoom_plate" />
 
     <TextView
@@ -19,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center_vertical"
-        android:textColor="@android:color/black"
+        android:textColor="@color/textColor"
         android:textSize="18sp"
         android:textStyle="bold"
         tools:text="scanned text" />
@@ -27,7 +28,8 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        android:background="@color/colorAccent">
 
         <ImageView
             android:id="@+id/copyIV"
@@ -36,8 +38,7 @@
             android:layout_marginEnd="24dp"
             android:background="?android:attr/selectableItemBackground"
             android:padding="8dp"
-            android:src="@drawable/ic_file_copy_black"
-            tools:src="@android:drawable/checkbox_on_background" />
+            android:src="@drawable/ic_file_copy_black" />
 
         <ImageView
             android:id="@+id/shareIV"
@@ -45,14 +46,14 @@
             android:layout_height="42dp"
             android:background="?android:attr/selectableItemBackground"
             android:padding="8dp"
-            android:src="@drawable/ic_share_black"
-            tools:src="@android:drawable/checkbox_on_background" />
+            android:src="@drawable/ic_share_black" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/ceneoTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/textColor"
         tools:text="ceneo link" />
 </LinearLayout>

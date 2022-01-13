@@ -3,4 +3,8 @@
     <color name="colorPrimary">#FF5733</color>
     <color name="colorPrimaryDark">#913316</color>
     <color name="colorAccent">#2196F4</color>
+
+    <color name="textColor">@android:color/black</color>
+    <color name="backgroundColor">@android:color/white</color>
+    <color name="barcodeBackground">@android:color/white</color>
 </resources>
