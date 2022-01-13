@@ -1,6 +1,5 @@
 package preaterii.scanner
 
-import android.R.attr.label
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
