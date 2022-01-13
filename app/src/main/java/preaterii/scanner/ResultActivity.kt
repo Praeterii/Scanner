@@ -34,7 +34,7 @@ class ResultActivity : AppCompatActivity() {
                 val clipboard: ClipboardManager =
                     getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("barcode", contents)
-                clipboard.primaryClip = clip
+                clipboard.setPrimaryClip(clip)
             }
             findViewById<View>(R.id.shareIV).setOnClickListener {
                 val sendIntent: Intent = Intent().apply {
