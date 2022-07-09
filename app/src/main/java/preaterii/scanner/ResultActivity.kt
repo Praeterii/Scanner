@@ -1,8 +1,5 @@
 package preaterii.scanner
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -30,13 +27,7 @@ class ResultActivity : AppCompatActivity() {
             addBarcodeText(findViewById(R.id.barcodeTV), contents)
             addBarcodeImage(findViewById(R.id.codeIV), contents)
             addCeneoLink(findViewById(R.id.ceneoTV), contents)
-            findViewById<View>(R.id.copyIV).setOnClickListener {
-                val clipboard: ClipboardManager =
-                    getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("barcode", contents)
-                clipboard.setPrimaryClip(clip)
-            }
-            findViewById<View>(R.id.shareIV).setOnClickListener {
+            findViewById<View>(R.id.fab).setOnClickListener {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, contents)
