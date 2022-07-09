@@ -5,12 +5,12 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
 import android.text.util.Linkify
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.text.isDigitsOnly
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
@@ -84,6 +84,6 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun isEanOrISBN(code: String): Boolean {
-        return code.length == 13 && code.isDigitsOnly()
+        return code.length == 13 && TextUtils.isDigitsOnly(code)
     }
 }

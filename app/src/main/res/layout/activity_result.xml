@@ -9,9 +9,11 @@
 
     <ImageView
         android:id="@+id/codeIV"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
         android:background="@color/barcodeBackground"
+        android:minWidth="200dp"
+        android:scaleType="fitCenter"
         tools:src="@android:drawable/zoom_plate" />
 
     <TextView
