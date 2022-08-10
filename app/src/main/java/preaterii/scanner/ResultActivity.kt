@@ -13,7 +13,6 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.journeyapps.barcodescanner.BarcodeEncoder
 
-
 class ResultActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_SCAN_DATA = "scanned"
@@ -76,5 +75,11 @@ class ResultActivity : AppCompatActivity() {
 
     private fun isEanOrISBN(code: String): Boolean {
         return code.length == 13 && TextUtils.isDigitsOnly(code)
+    }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, MainActivity::class.java)
+        this.startActivity(intent)
+        finish()
     }
 }
