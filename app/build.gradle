@@ -4,8 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 31
-
-
+    
     defaultConfig {
         applicationId "preaterii.scanner"
         minSdkVersion 24
@@ -28,7 +27,6 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
-
 }
 
 dependencies {

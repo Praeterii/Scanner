@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.integration.android.IntentIntegrator
 
-
 class MainActivity : AppCompatActivity() {
     private val requestCode = 42
     private var initiateScan = true
@@ -26,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == this.requestCode) {
