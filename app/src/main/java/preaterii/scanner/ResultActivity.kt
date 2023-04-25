@@ -2,7 +2,6 @@ package preaterii.scanner
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
 import android.text.util.Linkify
 import android.view.View
 import android.widget.ImageView
@@ -44,12 +43,12 @@ class ResultActivity : AppCompatActivity() {
     private fun addBarcodeImage(imageView: ImageView, code: String) {
         val multiFormatWriter = MultiFormatWriter()
         try {
-            val type = if (isEanOrISBN(code)) {
+            val type = if (code.isEanOrISBN()) {
                 BarcodeFormat.EAN_13
             } else {
                 BarcodeFormat.QR_CODE
             }
-            val bitMatrix = multiFormatWriter.encode(code, type, 200, 200)
+            val bitMatrix = multiFormatWriter.encode(code, type, 200, 200)  // TODO 200 dp
             val barcodeEncoder = BarcodeEncoder()
             val bitmap = barcodeEncoder.createBitmap(bitMatrix)
             imageView.setImageBitmap(bitmap)
@@ -64,7 +63,7 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun addCeneoLink(textView: TextView, contents: String) {
-        if (isEanOrISBN(contents)) {
+        if (contents.isEanOrISBN()) {
             textView.append("\n")
             textView.append("https://www.ceneo.pl/szukaj-$contents")
             Linkify.addLinks(textView, Linkify.WEB_URLS)
@@ -73,10 +72,7 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun isEanOrISBN(code: String): Boolean {
-        return code.length == 13 && TextUtils.isDigitsOnly(code)
-    }
-
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val intent = Intent(this, MainActivity::class.java)
         this.startActivity(intent)
