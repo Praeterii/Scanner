@@ -18,7 +18,6 @@
             android:layout_height="200dp"
             android:background="@color/barcodeBackground"
             android:minWidth="200dp"
-            android:scaleType="fitCenter"
             tools:src="@android:drawable/zoom_plate" />
 
         <TextView

@@ -48,7 +48,7 @@ class ResultActivity : AppCompatActivity() {
             } else {
                 BarcodeFormat.QR_CODE
             }
-            val bitMatrix = multiFormatWriter.encode(code, type, 200, 200)  // TODO 200 dp
+            val bitMatrix = multiFormatWriter.encode(code, type, 320, 200)  // TODO 200 dp
             val barcodeEncoder = BarcodeEncoder()
             val bitmap = barcodeEncoder.createBitmap(bitMatrix)
             imageView.setImageBitmap(bitmap)
