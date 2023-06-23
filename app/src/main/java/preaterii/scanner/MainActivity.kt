@@ -11,6 +11,7 @@ class MainActivity : AppCompatActivity() {
         IntentIntegrator(this)
             .setOrientationLocked(true)
             .setPrompt("")
+            .setBeepEnabled(false)
             .initiateScan()
     }
 
