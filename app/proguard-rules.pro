@@ -1,21 +1,39 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# --- Performance Optimizations ---
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Allow R8/ProGuard to change the visibility of classes and class members.
+# This enables more aggressive inlining and code optimization.
+-allowaccessmodification
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Flatten the package hierarchy to reduce the size of the DEX file and improve load times.
+# Moves all classes to the default package (root).
+-repackageclasses ''
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Remove logging calls in release builds to reduce overhead and code size.
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int i(...);
+    public static int w(...);
+    public static int d(...);
+    public static int e(...);
+}
+
+# Remove System.out logging calls
+-assumenosideeffects class java.io.PrintStream {
+    public void println(...);
+    public void print(...);
+}
+
+# Remove Kotlin null checks (Intrinsics).
+# WARNING: This improves performance and reduces size, but removes runtime null safety checks.
+# Only uncomment if you are confident in your code's null safety and have extensive testing.
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    public static void checkNotNullParameter(...);
+    public static void checkExpressionValueIsNotNull(...);
+    public static void checkNotNull(...);
+    public static void checkParameterIsNotNull(...);
+    public static void checkReturnedValueIsNotNull(...);
+    public static void throwNpe(...);
+    public static void throwJavaNpe(...);
+    public static void throwUninitializedPropertyAccessException(...);
+}
