@@ -10,6 +10,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         IntentIntegrator(this)
             .setOrientationLocked(true)
+            .setCaptureActivity(CustomScannerActivity::class.java)
             .setPrompt("")
             .setBeepEnabled(false)
             .initiateScan()

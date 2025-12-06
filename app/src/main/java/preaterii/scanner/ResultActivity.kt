@@ -6,6 +6,7 @@ import android.text.util.Linkify
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -35,6 +36,14 @@ class ResultActivity : AppCompatActivity() {
                 val shareIntent = Intent.createChooser(sendIntent, null)
                 startActivity(shareIntent)
             }
+
+            onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val intent = Intent(this@ResultActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            })
         } else {
             finish()
         }
@@ -70,12 +79,5 @@ class ResultActivity : AppCompatActivity() {
         } else {
             textView.visibility = View.GONE
         }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        val intent = Intent(this, MainActivity::class.java)
-        this.startActivity(intent)
-        finish()
     }
 }

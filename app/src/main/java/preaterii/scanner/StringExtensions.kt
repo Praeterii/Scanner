@@ -1,7 +1,7 @@
 package preaterii.scanner
 
-import android.text.TextUtils
+import androidx.core.text.isDigitsOnly
 
 fun String.isEanOrISBN(): Boolean {
-    return this.length == 13 && TextUtils.isDigitsOnly(this)
+    return this.length == 13 && this.isDigitsOnly()
 }

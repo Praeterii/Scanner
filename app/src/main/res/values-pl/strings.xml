@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Skaner kodów</string>
     <string name="share">Udostępnij kod</string>
+    <string name="flashlight">Latarka</string>
+    <string name="switch_camera">Zmień aparat</string>
 </resources>
