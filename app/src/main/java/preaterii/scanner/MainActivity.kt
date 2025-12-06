@@ -49,6 +49,8 @@ class MainActivity : AppCompatActivity() {
             switchCamera()
         }
 
+        barcodeScannerView.setStatusText("")
+
         barcodeScannerView.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult?) {
                 result?.let {
