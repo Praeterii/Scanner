@@ -3,6 +3,7 @@ package preaterii.scanner
 import android.content.Intent
 import android.os.Bundle
 import android.text.util.Linkify
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -23,6 +24,7 @@ class ResultActivity : AppCompatActivity() {
         val contents = intent?.extras?.getString(EXTRA_SCAN_DATA)
         if (contents != null) {
             setContentView(R.layout.activity_result)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
             addBarcodeText(findViewById(R.id.barcodeTV), contents)
             addBarcodeImage(findViewById(R.id.codeIV), contents)
             addCeneoLink(findViewById(R.id.ceneoTV), contents)
@@ -49,6 +51,11 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
+    }
+
     private fun addBarcodeImage(imageView: ImageView, code: String) {
         val multiFormatWriter = MultiFormatWriter()
         try {
@@ -57,7 +64,9 @@ class ResultActivity : AppCompatActivity() {
             } else {
                 BarcodeFormat.QR_CODE
             }
-            val bitMatrix = multiFormatWriter.encode(code, type, 320, 200)  // TODO 200 dp
+            val width = dpToPx(320f)
+            val height = dpToPx(200f)
+            val bitMatrix = multiFormatWriter.encode(code, type, width, height)
             val barcodeEncoder = BarcodeEncoder()
             val bitmap = barcodeEncoder.createBitmap(bitMatrix)
             imageView.setImageBitmap(bitmap)
@@ -80,4 +89,10 @@ class ResultActivity : AppCompatActivity() {
             textView.visibility = View.GONE
         }
     }
+
+    private fun dpToPx(dp: Float): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dp,
+        resources.displayMetrics
+    ).toInt()
 }
