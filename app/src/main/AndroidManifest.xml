@@ -16,6 +16,7 @@
         android:localeConfig="@xml/locales_config"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +24,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ResultActivity" />
-        <activity android:name=".CustomScannerActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity" />
     </application>
