@@ -3,6 +3,7 @@ package preaterii.scanner
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -39,6 +41,7 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import preaterii.scanner.ui.theme.ScannerTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -59,19 +62,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            ScannerScreen(
-                hasFlash = hasFlash(),
-                hasMultipleCameras = hasMultipleCameras(),
-                onScanResult = { text ->
-                    val intent = Intent(this, ResultActivity::class.java)
-                    intent.putExtra(ResultActivity.EXTRA_SCAN_DATA, text)
-                    startActivity(intent)
-                    finish()
-                },
-                onRequestCameraPermission = {
-                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            )
+            ScannerTheme {
+                ScannerScreen(
+                    hasFlash = hasFlash(),
+                    hasMultipleCameras = hasMultipleCameras(),
+                    onScanResult = { text ->
+                        val intent = Intent(this, ResultActivity::class.java)
+                        intent.putExtra(ResultActivity.EXTRA_SCAN_DATA, text)
+                        startActivity(intent)
+                        finish()
+                    },
+                    onRequestCameraPermission = {
+                        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                )
+            }
         }
     }
 
@@ -212,12 +217,16 @@ private fun ScannerScreen(
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, device = TABLET, name = "Tablet")
 @Composable
 private fun ScannerScreenPreview() {
-    ScannerScreen(
-        hasFlash = true,
-        hasMultipleCameras = true,
-        onScanResult = {},
-        onRequestCameraPermission = {}
-    )
+    ScannerTheme {
+        ScannerScreen(
+            hasFlash = true,
+            hasMultipleCameras = true,
+            onScanResult = {},
+            onRequestCameraPermission = {}
+        )
+    }
 }

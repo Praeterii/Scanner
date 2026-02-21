@@ -1,6 +1,7 @@
 package preaterii.scanner
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +50,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import preaterii.scanner.ui.theme.ScannerTheme
 
 class ResultActivity : ComponentActivity() {
     companion object {
@@ -68,11 +70,13 @@ class ResultActivity : ComponentActivity() {
             })
 
             setContent {
-                ResultScreen(
-                    contents = contents,
-                    onBackClick = { navigateBack() },
-                    onShareClick = { shareContent(contents) }
-                )
+                ScannerTheme {
+                    ResultScreen(
+                        contents = contents,
+                        onBackClick = { navigateBack() },
+                        onShareClick = { shareContent(contents) }
+                    )
+                }
             }
         } else {
             finish()
@@ -106,11 +110,11 @@ private fun ResultScreen(
 ) {
     val uriHandler = LocalUriHandler.current
     val isPreview = LocalInspectionMode.current
-    val barcodeBitmap = remember(contents) { 
+    val barcodeBitmap = remember(contents) {
         if (isPreview) {
             createBitmap(600, 300).apply { eraseColor(android.graphics.Color.GRAY) }
         } else {
-            generateBarcodeBitmap(contents) 
+            generateBarcodeBitmap(contents)
         }
     }
 
@@ -148,7 +152,7 @@ private fun ResultScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            contentAlignment = Alignment.TopCenter
+            contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -158,7 +162,6 @@ private fun ResultScreen(
                         bitmap = barcodeBitmap.asImageBitmap(),
                         contentDescription = "Barcode",
                         modifier = Modifier
-                            .sizeIn(minWidth = 200.dp, minHeight = 200.dp)
                     )
                 }
                 
@@ -212,12 +215,16 @@ private fun generateBarcodeBitmap(code: String): Bitmap? {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, device = TABLET, name = "Tablet")
 @Composable
 private fun ResultScreenPreview() {
-    ResultScreen(
-        contents = "1234567890123",
-        onBackClick = {},
-        onShareClick = {}
-    )
+    ScannerTheme {
+        ResultScreen(
+            contents = "1234567890123",
+            onBackClick = {},
+            onShareClick = {}
+        )
+    }
 }
