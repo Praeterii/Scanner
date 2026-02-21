@@ -11,7 +11,8 @@ Scanner is a simple yet powerful Android application written in Kotlin for scann
     *   View the raw scanned text.
     *   Generate and view a visual barcode/QR code of the scanned content.
     *   Share scanned content with other apps.
-*   **Available in English and Polish.
+*   **Dark Mode Support**: Fully supports light and dark themes.
+*   **Available in English and Polish**.
 
 ## Tech Stack
 
@@ -20,8 +21,9 @@ Scanner is a simple yet powerful Android application written in Kotlin for scann
     *   [ZXing Android Embedded](https://github.com/journeyapps/zxing-android-embedded)
     *   [ZXing Core](https://github.com/zxing/zxing)
 *   **UI Components**:
+    *   [Jetpack Compose](https://developer.android.com/jetpack/compose)
+    *   Material Design 3 (Material3)
     *   AndroidX AppCompat
-    *   Material Design Components
 
 ## Requirements
 

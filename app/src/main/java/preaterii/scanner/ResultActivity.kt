@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,11 +35,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Devices.TABLET
@@ -155,7 +158,8 @@ private fun ResultScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 if (barcodeBitmap != null) {
                     Image(
@@ -164,8 +168,6 @@ private fun ResultScreen(
                         modifier = Modifier
                     )
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = contents,
@@ -173,28 +175,36 @@ private fun ResultScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-
                 if (contents.isEanOrISBN()) {
-                    val ceneoUrl = "https://www.ceneo.pl/szukaj-$contents"
-                    val annotatedString = buildAnnotatedString {
-                        pushStringAnnotation(tag = "URL", annotation = ceneoUrl)
-                        withStyle(style = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
-                            append(ceneoUrl)
-                        }
-                        pop()
-                    }
-                    
-                    Text(
-                        text = annotatedString,
-                        modifier = Modifier.clickable {
-                            uriHandler.openUri(ceneoUrl)
-                        }
-                    )
+                    WebUrl(url = "https://www.ceneo.pl/szukaj-$contents", uriHandler = uriHandler)
+                    WebUrl(url = "https://www.amazon.pl/s?k=$contents", uriHandler = uriHandler)
+                    WebUrl(url = "https://allegro.pl/listing?string=$contents&order=p", uriHandler = uriHandler)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun WebUrl(
+    url: String,
+    uriHandler: UriHandler
+) {
+    val annotatedString = buildAnnotatedString {
+        pushStringAnnotation(tag = "URL", annotation = url)
+        withStyle(style = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
+            append(url)
+        }
+        pop()
+    }
+
+    Text(
+        text = annotatedString,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.clickable {
+            uriHandler.openUri(url)
+        },
+    )
 }
 
 private fun generateBarcodeBitmap(code: String): Bitmap? {
@@ -222,7 +232,7 @@ private fun generateBarcodeBitmap(code: String): Bitmap? {
 private fun ResultScreenPreview() {
     ScannerTheme {
         ResultScreen(
-            contents = "1234567890123",
+            contents = "5901588016443",
             onBackClick = {},
             onShareClick = {}
         )
