@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
@@ -160,11 +161,13 @@ private fun ResultScreen(
                     )
                 }
 
-                Text(
-                    text = contents,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                SelectionContainer {
+                    Text(
+                        text = contents,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 if (contents.isEanOrISBN()) {
                     WebUrl(url = "https://www.ceneo.pl/szukaj-$contents", uriHandler = uriHandler)
@@ -225,6 +228,18 @@ private fun ResultScreenPreview() {
     ScannerTheme {
         ResultScreen(
             contents = "5901588016443",
+            onBackClick = {},
+            onShareClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode plaintext")
+@Composable
+private fun ResultScreenPlainTextPreview() {
+    ScannerTheme {
+        ResultScreen(
+            contents = "plaintext",
             onBackClick = {},
             onShareClick = {}
         )
