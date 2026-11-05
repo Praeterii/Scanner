@@ -1,27 +1,45 @@
 package preaterii.scanner
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,20 +50,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
@@ -109,9 +121,11 @@ private fun ResultScreen(
     onShareClick: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     val barcodeBitmap = remember(contents) {
         generateBarcodeBitmap(contents)
     }
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -126,15 +140,19 @@ private fun ResultScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.colorPrimary),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onShareClick) {
+            FloatingActionButton(
+                onClick = onShareClick,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
                 Icon(
                     imageVector = Icons.Default.Share,
                     contentDescription = stringResource(id = R.string.share)
@@ -142,63 +160,213 @@ private fun ResultScreen(
             }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                .verticalScroll(scrollState)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+            if (barcodeBitmap != null) {
+                BarcodeSection(contents = contents, barcodeBitmap = barcodeBitmap)
+            }
+
+            ScannedContentSection(contents = contents, context = context)
+
+            ShoppingLinksSection(contents = contents, uriHandler = uriHandler)
+        }
+    }
+}
+
+@Composable
+private fun BarcodeSection(
+    contents: String,
+    barcodeBitmap: Bitmap
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = if (contents.isEanOrISBN()) "Barcode (EAN-13)" else "QR Code",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Box(
+                modifier = Modifier
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                if (barcodeBitmap != null) {
-                    Image(
-                        bitmap = barcodeBitmap.asImageBitmap(),
-                        contentDescription = "Barcode",
-                        modifier = Modifier
-                    )
-                }
-
-                SelectionContainer {
-                    Text(
-                        text = contents,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                if (contents.isEanOrISBN()) {
-                    WebUrl(url = "https://www.ceneo.pl/szukaj-$contents", uriHandler = uriHandler)
-                    WebUrl(url = "https://www.amazon.pl/s?k=$contents", uriHandler = uriHandler)
-                    WebUrl(url = "https://allegro.pl/listing?string=$contents&order=p", uriHandler = uriHandler)
-                }
+                Image(
+                    bitmap = barcodeBitmap.asImageBitmap(),
+                    contentDescription = "Barcode",
+                    modifier = Modifier
+                )
             }
         }
     }
 }
 
 @Composable
-private fun WebUrl(
+private fun ScannedContentSection(
+    contents: String,
+    context: Context
+) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Scanned Content",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(
+                    onClick = {
+                        val clipboard =
+                            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("Scanned Result", contents)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            SelectionContainer {
+                Text(
+                    text = contents,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShoppingLinksSection(
+    contents: String,
+    uriHandler: UriHandler
+) {
+    if (contents.isEanOrISBN()) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Search Online",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.Start)
+            )
+
+            ShoppingLinkCard(
+                name = "Ceneo",
+                url = "https://www.ceneo.pl/szukaj-$contents",
+                uriHandler = uriHandler
+            )
+            ShoppingLinkCard(
+                name = "Amazon.pl",
+                url = "https://www.amazon.pl/s?k=$contents",
+                uriHandler = uriHandler
+            )
+            ShoppingLinkCard(
+                name = "Allegro",
+                url = "https://allegro.pl/listing?string=$contents&order=p",
+                uriHandler = uriHandler
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShoppingLinkCard(
+    name: String,
     url: String,
     uriHandler: UriHandler
 ) {
-    val annotatedString = buildAnnotatedString {
-        pushStringAnnotation(tag = "URL", annotation = url)
-        withStyle(style = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
-            append(url)
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { uriHandler.openUri(url) },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Column {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = url,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "Open",
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp)
+            )
         }
-        pop()
     }
-
-    Text(
-        text = annotatedString,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.clickable {
-            uriHandler.openUri(url)
-        },
-    )
 }
 
 private fun generateBarcodeBitmap(code: String): Bitmap? {
@@ -209,7 +377,6 @@ private fun generateBarcodeBitmap(code: String): Bitmap? {
         } else {
             BarcodeFormat.QR_CODE
         }
-        // We can use a default size here, scaling is handled by Image composable
         val bitMatrix = multiFormatWriter.encode(code, type, 600, 300)
         val barcodeEncoder = BarcodeEncoder()
         barcodeEncoder.createBitmap(bitMatrix)
