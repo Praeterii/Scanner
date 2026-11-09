@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
-import com.journeyapps.barcodescanner.BarcodeEncoder
 import preaterii.scanner.ui.theme.ScannerTheme
 
 class ResultActivity : ComponentActivity() {
@@ -294,7 +293,7 @@ private fun ShoppingLinksSection(
 
             ShoppingLinkCard(
                 name = "Ceneo",
-                url = "https://www.ceneo.pl/szukaj-$contents",
+                url = "https://www.ceneo.pl/;szukaj-$contents",
                 uriHandler = uriHandler
             )
             ShoppingLinkCard(
@@ -378,8 +377,19 @@ private fun generateBarcodeBitmap(code: String): Bitmap? {
             BarcodeFormat.QR_CODE
         }
         val bitMatrix = multiFormatWriter.encode(code, type, 600, 300)
-        val barcodeEncoder = BarcodeEncoder()
-        barcodeEncoder.createBitmap(bitMatrix)
+        val width = bitMatrix.width
+        val height = bitMatrix.height
+        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bmp.setPixel(
+                    x,
+                    y,
+                    if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                )
+            }
+        }
+        bmp
     } catch (e: WriterException) {
         e.printStackTrace()
         null

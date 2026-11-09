@@ -1,6 +1,6 @@
 # Scanner
 
-Scanner is a simple yet powerful Android application written in Kotlin for scanning Barcodes and QR codes. It leverages the ZXing library to provide fast and reliable scanning capabilities.
+Scanner is a simple yet powerful Android application written in Kotlin for scanning Barcodes and QR codes. It leverages Google ML Kit Barcode Scanning and Jetpack CameraX for fast and reliable scanning capabilities.
 
 ## Features
 
@@ -18,8 +18,9 @@ Scanner is a simple yet powerful Android application written in Kotlin for scann
 
 *   **Language**: [Kotlin](https://kotlinlang.org/)
 *   **Core Libraries**:
-    *   [ZXing Android Embedded](https://github.com/journeyapps/zxing-android-embedded)
-    *   [ZXing Core](https://github.com/zxing/zxing)
+    *   [Google ML Kit Barcode Scanning](https://developers.google.com/ml-kit/vision/barcode-scanning)
+    *   [Jetpack CameraX](https://developer.android.com/training/camerax)
+    *   [ZXing Core](https://github.com/zxing/zxing) (for barcode generation)
 *   **UI Components**:
     *   [Jetpack Compose](https://developer.android.com/jetpack/compose)
     *   Material Design 3 (Material3)

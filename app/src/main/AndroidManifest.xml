@@ -24,7 +24,5 @@
             </intent-filter>
         </activity>
         <activity android:name=".ResultActivity" />
-        <activity
-            android:name="com.journeyapps.barcodescanner.CaptureActivity" />
     </application>
 </manifest>
