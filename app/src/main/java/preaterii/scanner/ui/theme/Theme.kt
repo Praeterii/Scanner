@@ -24,7 +24,7 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = TextColorDark,
     surface = BackgroundColorDark,
     onSurface = TextColorDark,
-    onPrimary = Color.White,
+    onPrimary = TextColorLight,
     onSecondary = Color.White,
 )
 
@@ -36,14 +36,15 @@ private val LightColorScheme = lightColorScheme(
     onBackground = TextColorLight,
     surface = BackgroundColorLight,
     onSurface = TextColorLight,
-    onPrimary = Color.White,
+    onPrimary = TextColorLight,
     onSecondary = Color.White,
 )
+
 @Composable
 fun ScannerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
