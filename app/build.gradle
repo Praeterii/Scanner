@@ -9,8 +9,8 @@ android {
         applicationId "preaterii.scanner"
         minSdkVersion 24
         targetSdkVersion 37
-        versionCode 5
-        versionName "1.5"
+        versionCode 6
+        versionName "2.0"
         resourceConfigurations += ["en", "pl"]
         vectorDrawables.useSupportLibrary = true
 
