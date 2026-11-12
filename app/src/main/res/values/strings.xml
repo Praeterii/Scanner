@@ -1,6 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Scanner</string>
     <string name="share">Share barcode</string>
     <string name="flashlight">Flashlight</string>
     <string name="switch_camera">Switch Camera</string>
+
+    <string name="camera_permission_required_toast">Camera permission is required to scan barcodes</string>
+    <string name="camera_preview_label">Camera Preview</string>
+    <string name="camera_permission_required_label">Camera permission is required</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="back">Back</string>
+    <string name="barcode_ean13">Barcode (EAN-13)</string>
+    <string name="qr_code">QR Code</string>
+    <string name="barcode">Barcode</string>
+    <string name="scanned_content">Scanned Content</string>
+    <string name="copy">Copy</string>
+    <string name="scanned_result_clipboard">Scanned Result</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="search_online">Search Online</string>
+    <string name="open">Open</string>
 </resources>

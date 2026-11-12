@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +57,19 @@ import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (!isGranted) {
+            Toast.makeText(
+                this,
+                getString(R.string.camera_permission_required_toast),
+                Toast.LENGTH_SHORT
+            ).show()
+            finish()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,6 +83,9 @@ class MainActivity : ComponentActivity() {
                         intent.putExtra(ResultActivity.EXTRA_SCAN_DATA, text)
                         startActivity(intent)
                         finish()
+                    },
+                    onRequestCameraPermission = {
+                        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                     }
                 )
             }
@@ -88,7 +106,8 @@ class MainActivity : ComponentActivity() {
 private fun ScannerScreen(
     hasFlash: Boolean,
     hasMultipleCameras: Boolean,
-    onScanResult: (String) -> Unit
+    onScanResult: (String) -> Unit,
+    onRequestCameraPermission: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -113,7 +132,7 @@ private fun ScannerScreen(
         if (!isGranted) {
             Toast.makeText(
                 context,
-                "Camera permission is required to scan barcodes",
+                context.getString(R.string.camera_permission_required_toast),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -123,7 +142,7 @@ private fun ScannerScreen(
 
     LaunchedEffect(Unit) {
         if (!isInPreview && !hasPermission) {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
+            onRequestCameraPermission()
         }
     }
 
@@ -203,18 +222,23 @@ private fun ScannerScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = "Camera permission is required")
-                        Button(onClick = {
-                            permissionLauncher.launch(Manifest.permission.CAMERA)
-                        }) {
-                            Text(text = "Grant Permission")
+                        Text(text = stringResource(id = R.string.camera_permission_required_label))
+                        Button(
+                            onClick = {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.colorPrimary)
+                            )
+                        ) {
+                            Text(text = stringResource(id = R.string.grant_permission))
                         }
                     }
                 }
             }
         } else {
             Text(
-                text = "Camera Preview",
+                text = stringResource(id = R.string.camera_preview_label),
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -232,7 +256,10 @@ private fun ScannerScreen(
                         isFlashlightOn = !isFlashlightOn
                         camera?.cameraControl?.enableTorch(isFlashlightOn)
                     },
-                    modifier = Modifier.padding(end = 16.dp)
+                    modifier = Modifier.padding(end = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.colorPrimary)
+                    )
                 ) {
                     Text(text = stringResource(id = R.string.flashlight))
                 }
@@ -251,7 +278,10 @@ private fun ScannerScreen(
                             CameraSelector.LENS_FACING_BACK
                         }
                     },
-                    modifier = Modifier.padding(start = 16.dp)
+                    modifier = Modifier.padding(start = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.colorPrimary)
+                    )
                 ) {
                     Text(text = stringResource(id = R.string.switch_camera))
                 }
@@ -299,7 +329,8 @@ private fun ScannerScreenPreview() {
         ScannerScreen(
             hasFlash = true,
             hasMultipleCameras = true,
-            onScanResult = {}
+            onScanResult = {},
+            onRequestCameraPermission = {}
         )
     }
 }

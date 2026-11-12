@@ -134,23 +134,23 @@ private fun ResultScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.back)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onShareClick,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(
                     imageVector = Icons.Default.Share,
@@ -199,7 +199,7 @@ private fun BarcodeSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = if (contents.isEanOrISBN()) "Barcode (EAN-13)" else "QR Code",
+                text = if (contents.isEanOrISBN()) stringResource(id = R.string.barcode_ean13) else stringResource(id = R.string.qr_code),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -211,7 +211,7 @@ private fun BarcodeSection(
             ) {
                 Image(
                     bitmap = barcodeBitmap.asImageBitmap(),
-                    contentDescription = "Barcode",
+                    contentDescription = stringResource(id = R.string.barcode),
                     modifier = Modifier
                 )
             }
@@ -240,7 +240,7 @@ private fun ScannedContentSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Scanned Content",
+                    text = stringResource(id = R.string.scanned_content),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -248,15 +248,22 @@ private fun ScannedContentSection(
                     onClick = {
                         val clipboard =
                             context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Scanned Result", contents)
+                        val clip = ClipData.newPlainText(
+                            context.resources.getString(R.string.scanned_result_clipboard),
+                            contents
+                        )
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.resources.getString(R.string.copied_to_clipboard),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
+                        contentDescription = stringResource(id = R.string.copy),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -285,7 +292,7 @@ private fun ShoppingLinksSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Search Online",
+                text = stringResource(id = R.string.search_online),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Start)
@@ -358,7 +365,7 @@ private fun ShoppingLinkCard(
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Open",
+                contentDescription = stringResource(id = R.string.open),
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier
                     .padding(start = 8.dp)

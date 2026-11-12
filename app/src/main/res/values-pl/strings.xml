@@ -4,4 +4,19 @@
     <string name="share">Udostępnij kod</string>
     <string name="flashlight">Latarka</string>
     <string name="switch_camera">Zmień aparat</string>
+
+    <string name="camera_permission_required_toast">Wymagane jest zezwolenie na aparat, aby skanować kody</string>
+    <string name="camera_preview_label">Podgląd kamery</string>
+    <string name="camera_permission_required_label">Wymagane jest zezwolenie na aparat</string>
+    <string name="grant_permission">Udziel zezwolenia</string>
+    <string name="back">Wstecz</string>
+    <string name="barcode_ean13">Kod kreskowy (EAN-13)</string>
+    <string name="qr_code">Kod QR</string>
+    <string name="barcode">Kod kreskowy</string>
+    <string name="scanned_content">Zeskanowana zawartość</string>
+    <string name="copy">Kopiuj</string>
+    <string name="scanned_result_clipboard">Wynik skanowania</string>
+    <string name="copied_to_clipboard">Skopiowano do schowka</string>
+    <string name="search_online">Szukaj w internecie</string>
+    <string name="open">Otwórz</string>
 </resources>
