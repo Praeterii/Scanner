@@ -37,3 +37,8 @@
     public static void throwJavaNpe(...);
     public static void throwUninitializedPropertyAccessException(...);
 }
+
+# Keep google mlkit
+-keep class com.google.mlkit.vision.barcode.internal.** { *; }
+-keep class com.google.mlkit.common.internal.** { *; }
+-keep class com.google.mlkit.common.sdkinternal.** { *; }
