@@ -9,8 +9,8 @@ android {
         applicationId "preaterii.scanner"
         minSdkVersion 24
         targetSdkVersion 37
-        versionCode 6
-        versionName "2.0"
+        versionCode 7
+        versionName "2.1"
         resourceConfigurations += ["en", "pl"]
         vectorDrawables.useSupportLibrary = true
 
@@ -24,7 +24,11 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources true
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+            )
         }
         beta {
             applicationIdSuffix = ".beta"
@@ -58,7 +62,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation('com.google.zxing:core:3.5.4')
     implementation 'androidx.appcompat:appcompat:1.8.0'
-    implementation 'com.google.android.material:material:1.14.0'
 
     // CameraX dependencies
     implementation 'androidx.camera:camera-core:1.6.2'

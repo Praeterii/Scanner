@@ -57,19 +57,6 @@ import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (!isGranted) {
-            Toast.makeText(
-                this,
-                getString(R.string.camera_permission_required_toast),
-                Toast.LENGTH_SHORT
-            ).show()
-            finish()
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,9 +70,6 @@ class MainActivity : ComponentActivity() {
                         intent.putExtra(ResultActivity.EXTRA_SCAN_DATA, text)
                         startActivity(intent)
                         finish()
-                    },
-                    onRequestCameraPermission = {
-                        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                     }
                 )
             }
@@ -106,8 +90,7 @@ class MainActivity : ComponentActivity() {
 private fun ScannerScreen(
     hasFlash: Boolean,
     hasMultipleCameras: Boolean,
-    onScanResult: (String) -> Unit,
-    onRequestCameraPermission: () -> Unit
+    onScanResult: (String) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -142,7 +125,7 @@ private fun ScannerScreen(
 
     LaunchedEffect(Unit) {
         if (!isInPreview && !hasPermission) {
-            onRequestCameraPermission()
+            permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -329,8 +312,7 @@ private fun ScannerScreenPreview() {
         ScannerScreen(
             hasFlash = true,
             hasMultipleCameras = true,
-            onScanResult = {},
-            onRequestCameraPermission = {}
+            onScanResult = {}
         )
     }
 }
