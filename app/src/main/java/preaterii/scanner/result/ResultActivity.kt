@@ -1,10 +1,9 @@
-package preaterii.scanner
+package preaterii.scanner.result
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.Toast
@@ -55,12 +54,12 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
+import preaterii.scanner.MainActivity
+import preaterii.scanner.R
+import preaterii.scanner.ScannerPreview
 import preaterii.scanner.ui.theme.ScannerTheme
 
 class ResultActivity : ComponentActivity() {
@@ -68,7 +67,6 @@ class ResultActivity : ComponentActivity() {
         const val EXTRA_SCAN_DATA = "scanned"
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val contents = intent?.extras?.getString(EXTRA_SCAN_DATA)
@@ -112,7 +110,6 @@ class ResultActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ResultScreen(
     contents: String,
@@ -172,7 +169,7 @@ private fun ResultScreen(
                 BarcodeSection(contents = contents, barcodeBitmap = barcodeBitmap)
             }
 
-            ScannedContentSection(contents = contents, context = context)
+            ScannedContentSection(contents = contents, context = context, uriHandler = uriHandler)
 
             ShoppingLinksSection(contents = contents, uriHandler = uriHandler)
         }
@@ -222,8 +219,10 @@ private fun BarcodeSection(
 @Composable
 private fun ScannedContentSection(
     contents: String,
-    context: Context
+    context: Context,
+    uriHandler: UriHandler
 ) {
+    val isUrl = contents.isUrl()
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
@@ -245,20 +244,7 @@ private fun ScannedContentSection(
                     color = MaterialTheme.colorScheme.primary
                 )
                 IconButton(
-                    onClick = {
-                        val clipboard =
-                            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText(
-                            context.resources.getString(R.string.scanned_result_clipboard),
-                            contents
-                        )
-                        clipboard.setPrimaryClip(clip)
-                        Toast.makeText(
-                            context,
-                            context.resources.getString(R.string.copied_to_clipboard),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    },
+                    onClick = { copyToClipboard(context, contents) },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
@@ -274,11 +260,40 @@ private fun ScannedContentSection(
                     text = contents,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = if (isUrl) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (isUrl) TextDecoration.Underline else null,
+                    modifier = Modifier.then(
+                        if (isUrl) {
+                            Modifier.clickable {
+                                val url = if (!contents.startsWith("http://", true) && !contents.startsWith("https://", true)) {
+                                    "https://$contents"
+                                } else {
+                                    contents
+                                }
+                                uriHandler.openUri(url)
+                            }
+                        } else {
+                            Modifier
+                        }
+                    )
                 )
             }
         }
     }
+}
+
+private fun copyToClipboard(context: Context, text: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText(
+        context.resources.getString(R.string.scanned_result_clipboard),
+        text
+    )
+    clipboard.setPrimaryClip(clip)
+    Toast.makeText(
+        context,
+        context.resources.getString(R.string.copied_to_clipboard),
+        Toast.LENGTH_SHORT
+    ).show()
 }
 
 @Composable
@@ -287,6 +302,12 @@ private fun ShoppingLinksSection(
     uriHandler: UriHandler
 ) {
     if (contents.isEanOrISBN()) {
+        val sites = listOf(
+            ShoppingSite("Ceneo", "https://www.ceneo.pl/;szukaj-$contents"),
+            ShoppingSite("Amazon.pl", "https://www.amazon.pl/s?k=$contents"),
+            ShoppingSite("Allegro", "https://allegro.pl/listing?string=$contents&order=p")
+        )
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -298,21 +319,13 @@ private fun ShoppingLinksSection(
                 modifier = Modifier.align(Alignment.Start)
             )
 
-            ShoppingLinkCard(
-                name = "Ceneo",
-                url = "https://www.ceneo.pl/;szukaj-$contents",
-                uriHandler = uriHandler
-            )
-            ShoppingLinkCard(
-                name = "Amazon.pl",
-                url = "https://www.amazon.pl/s?k=$contents",
-                uriHandler = uriHandler
-            )
-            ShoppingLinkCard(
-                name = "Allegro",
-                url = "https://allegro.pl/listing?string=$contents&order=p",
-                uriHandler = uriHandler
-            )
+            sites.forEach { site ->
+                ShoppingLinkCard(
+                    name = site.name,
+                    url = site.url,
+                    uriHandler = uriHandler
+                )
+            }
         }
     }
 }
@@ -375,55 +388,14 @@ private fun ShoppingLinkCard(
     }
 }
 
-private fun generateBarcodeBitmap(code: String): Bitmap? {
-    val multiFormatWriter = MultiFormatWriter()
-    return try {
-        val type = if (code.isEanOrISBN()) {
-            BarcodeFormat.EAN_13
-        } else {
-            BarcodeFormat.QR_CODE
-        }
-        val bitMatrix = multiFormatWriter.encode(code, type, 600, 300)
-        val width = bitMatrix.width
-        val height = bitMatrix.height
-        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bmp.setPixel(
-                    x,
-                    y,
-                    if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-                )
-            }
-        }
-        bmp
-    } catch (e: WriterException) {
-        e.printStackTrace()
-        null
-    }
-}
-
-@Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
-@Preview(showBackground = true, device = Devices.NEXUS_7_2013, name = "7\" Tablet")
-@Preview(showBackground = true, device = Devices.PIXEL_C, name = "10\" Tablet")
+@ScannerPreview
 @Composable
-private fun ResultScreenPreview() {
+private fun ResultScreenParamPreview(
+    @PreviewParameter(ResultScreenParameterProvider::class) contents: String
+) {
     ScannerTheme {
         ResultScreen(
-            contents = "5901588016443",
-            onBackClick = {},
-            onShareClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Light Mode plaintext")
-@Composable
-private fun ResultScreenPlainTextPreview() {
-    ScannerTheme {
-        ResultScreen(
-            contents = "plaintext",
+            contents = contents,
             onBackClick = {},
             onShareClick = {}
         )

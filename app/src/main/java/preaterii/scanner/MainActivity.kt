@@ -3,7 +3,6 @@ package preaterii.scanner
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -29,7 +28,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -43,8 +41,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices.TABLET
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -52,6 +50,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import preaterii.scanner.result.ResultActivity
 import preaterii.scanner.ui.theme.ScannerTheme
 import java.util.concurrent.Executors
 
@@ -90,6 +89,10 @@ class MainActivity : ComponentActivity() {
 private fun ScannerScreen(
     hasFlash: Boolean,
     hasMultipleCameras: Boolean,
+    initialHasPermission: Boolean = ContextCompat.checkSelfPermission(
+        LocalContext.current,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED,
     onScanResult: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -99,13 +102,29 @@ private fun ScannerScreen(
     var camera by remember { mutableStateOf<Camera?>(null) }
     var hasScanned by remember { mutableStateOf(false) }
 
+    val isInPreview = LocalInspectionMode.current
+    val barcodeScanner = remember {
+        if (!isInPreview) {
+            BarcodeScanning.getClient(
+                BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                        Barcode.FORMAT_QR_CODE,
+                        Barcode.FORMAT_EAN_13,
+                        Barcode.FORMAT_EAN_8,
+                        Barcode.FORMAT_UPC_A,
+                        Barcode.FORMAT_UPC_E,
+                        Barcode.FORMAT_CODE_128,
+                        Barcode.FORMAT_CODE_39
+                    )
+                    .build()
+            )
+        } else {
+            null
+        }
+    }
+
     var hasPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        )
+        mutableStateOf(initialHasPermission)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -121,17 +140,9 @@ private fun ScannerScreen(
         }
     }
 
-    val isInPreview = LocalInspectionMode.current
-
-    LaunchedEffect(Unit) {
-        if (!isInPreview && !hasPermission) {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        if (!isInPreview) {
-            if (hasPermission) {
+        if (hasPermission) {
+            if (!isInPreview) {
                 key(lensFacing) {
                     AndroidView(
                         modifier = Modifier.fillMaxSize(),
@@ -142,26 +153,12 @@ private fun ScannerScreen(
                             cameraProviderFuture.addListener({
                                 val cameraProvider = cameraProviderFuture.get()
                                 val preview = CameraPreview.Builder().build().also {
-                                    it.setSurfaceProvider(previewView.surfaceProvider)
+                                    it.surfaceProvider = previewView.surfaceProvider
                                 }
 
                                 val cameraSelector = CameraSelector.Builder()
                                     .requireLensFacing(lensFacing)
                                     .build()
-
-                                val barcodeScanner = BarcodeScanning.getClient(
-                                    BarcodeScannerOptions.Builder()
-                                        .setBarcodeFormats(
-                                            Barcode.FORMAT_QR_CODE,
-                                            Barcode.FORMAT_EAN_13,
-                                            Barcode.FORMAT_EAN_8,
-                                            Barcode.FORMAT_UPC_A,
-                                            Barcode.FORMAT_UPC_E,
-                                            Barcode.FORMAT_CODE_128,
-                                            Barcode.FORMAT_CODE_39
-                                        )
-                                        .build()
-                                )
 
                                 val analysisExecutor = Executors.newSingleThreadExecutor()
                                 val imageAnalysis = ImageAnalysis.Builder()
@@ -169,11 +166,15 @@ private fun ScannerScreen(
                                     .build()
 
                                 imageAnalysis.setAnalyzer(analysisExecutor) { imageProxy ->
-                                    processImageProxy(barcodeScanner, imageProxy) { resultText ->
-                                        if (!hasScanned) {
-                                            hasScanned = true
-                                            onScanResult(resultText)
+                                    if (barcodeScanner != null) {
+                                        processImageProxy(barcodeScanner, imageProxy) { resultText ->
+                                            if (!hasScanned) {
+                                                hasScanned = true
+                                                onScanResult(resultText)
+                                            }
                                         }
+                                    } else {
+                                        imageProxy.close()
                                     }
                                 }
 
@@ -197,83 +198,88 @@ private fun ScannerScreen(
                     )
                 }
             } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                Text(
+                    text = stringResource(id = R.string.camera_preview_label),
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    Text(
+                        text = stringResource(id = R.string.camera_permission_required_label),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Button(
+                        onClick = {
+                            permissionLauncher.launch(Manifest.permission.CAMERA)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.colorPrimary)
+                        )
                     ) {
-                        Text(text = stringResource(id = R.string.camera_permission_required_label))
-                        Button(
-                            onClick = {
-                                permissionLauncher.launch(Manifest.permission.CAMERA)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(id = R.color.colorPrimary)
-                            )
-                        ) {
-                            Text(text = stringResource(id = R.string.grant_permission))
-                        }
+                        Text(text = stringResource(id = R.string.grant_permission))
                     }
                 }
             }
-        } else {
-            Text(
-                text = stringResource(id = R.string.camera_preview_label),
-                modifier = Modifier.align(Alignment.Center)
-            )
         }
 
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            if (hasFlash && lensFacing == CameraSelector.LENS_FACING_BACK) {
-                Button(
-                    onClick = {
-                        isFlashlightOn = !isFlashlightOn
-                        camera?.cameraControl?.enableTorch(isFlashlightOn)
-                    },
-                    modifier = Modifier.padding(end = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.colorPrimary)
-                    )
-                ) {
-                    Text(text = stringResource(id = R.string.flashlight))
+        if (hasPermission) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (hasFlash && lensFacing == CameraSelector.LENS_FACING_BACK) {
+                    Button(
+                        onClick = {
+                            isFlashlightOn = !isFlashlightOn
+                            camera?.cameraControl?.enableTorch(isFlashlightOn)
+                        },
+                        modifier = Modifier.padding(end = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.colorPrimary)
+                        )
+                    ) {
+                        Text(text = stringResource(id = R.string.flashlight))
+                    }
                 }
-            }
 
-            if (hasMultipleCameras) {
-                Button(
-                    onClick = {
-                        if (isFlashlightOn) {
-                            isFlashlightOn = false
-                            camera?.cameraControl?.enableTorch(false)
-                        }
-                        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                            CameraSelector.LENS_FACING_FRONT
-                        } else {
-                            CameraSelector.LENS_FACING_BACK
-                        }
-                    },
-                    modifier = Modifier.padding(start = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.colorPrimary)
-                    )
-                ) {
-                    Text(text = stringResource(id = R.string.switch_camera))
+                if (hasMultipleCameras) {
+                    Button(
+                        onClick = {
+                            if (isFlashlightOn) {
+                                isFlashlightOn = false
+                                camera?.cameraControl?.enableTorch(false)
+                            }
+                            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                                CameraSelector.LENS_FACING_FRONT
+                            } else {
+                                CameraSelector.LENS_FACING_BACK
+                            }
+                        },
+                        modifier = Modifier.padding(start = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.colorPrimary)
+                        )
+                    ) {
+                        Text(text = stringResource(id = R.string.switch_camera))
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalGetImage::class)
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 private fun processImageProxy(
     barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
     imageProxy: ImageProxy,
@@ -303,15 +309,16 @@ private fun processImageProxy(
     }
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
-@Preview(showBackground = true, device = TABLET, name = "Tablet")
+@ScannerPreview
 @Composable
-private fun ScannerScreenPreview() {
+private fun ScannerScreenPreview(
+    @PreviewParameter(ScannerScreenParameterProvider::class) initialHasPermission: Boolean
+) {
     ScannerTheme {
         ScannerScreen(
             hasFlash = true,
             hasMultipleCameras = true,
+            initialHasPermission = initialHasPermission,
             onScanResult = {}
         )
     }

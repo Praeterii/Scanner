@@ -5,6 +5,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import preaterii.scanner.result.isEanOrISBN
 
 @Config(manifest=Config.NONE)
 @RunWith(AndroidJUnit4::class)
