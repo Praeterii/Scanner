@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -302,11 +303,7 @@ private fun ShoppingLinksSection(
     uriHandler: UriHandler
 ) {
     if (contents.isEanOrISBN()) {
-        val sites = listOf(
-            ShoppingSite("Ceneo", "https://www.ceneo.pl/;szukaj-$contents"),
-            ShoppingSite("Amazon.pl", "https://www.amazon.pl/s?k=$contents"),
-            ShoppingSite("Allegro", "https://allegro.pl/listing?string=$contents&order=p")
-        )
+        val sites = getShoppingSites(contents, LocalConfiguration.current.locales[0])
 
         Column(
             modifier = Modifier.fillMaxWidth(),
